@@ -1,0 +1,39 @@
+# Vite copies everything in public/ to the root of dist/, so this ships with the build.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Canonical HTTPS. Enable AutoSSL in cPanel before the first deploy,
+  # otherwise this redirects to a certificate that does not exist yet.
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # Single-page app: anything that is not a real file or directory
+  # is handed to index.html so React can render it.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml \
+    application/javascript application/json image/svg+xml
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+
+  # Vite fingerprints asset filenames, so they can be cached forever.
+  <FilesMatch "\.(js|css|woff2?|ttf|otf|jpg|jpeg|png|gif|webp|avif|svg|ico)$">
+    ExpiresDefault "access plus 1 year"
+  </FilesMatch>
+
+  # index.html must not be cached, or deploys go unnoticed by browsers.
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>

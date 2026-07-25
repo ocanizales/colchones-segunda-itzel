@@ -1,9 +1,5 @@
-# Fallback path only — used if the host blocks FTP and you deploy through
-# cPanel's "Git Version Control" instead of the GitHub Actions workflow.
-# Requires a branch that has dist/ committed, and DEPLOYPATH edited to the
-# real cPanel username. The default path is GitHub Actions + FTPS.
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/CPANEL_USERNAME/public_html/
+    - export DEPLOYPATH=$HOME/public_html/
     - /bin/cp -R dist/. $DEPLOYPATH

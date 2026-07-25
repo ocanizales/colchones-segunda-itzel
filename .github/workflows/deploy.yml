@@ -1,17 +1,19 @@
-name: Build & Deploy to cPanel
+name: Verify dist is current
+
+# Deployment itself happens in cPanel (Git Version Control → Deploy HEAD Commit),
+# which copies files but cannot build. That makes a committed dist/ load-bearing:
+# if someone edits src/ and forgets to rebuild, cPanel would happily deploy the
+# previous version and the change would silently never go live. This job rebuilds
+# from source and fails if the result differs from what was committed.
 
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
-# Never let two deploys write to public_html at the same time.
-concurrency:
-  group: deploy-production
-  cancel-in-progress: true
-
 jobs:
-  deploy:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,17 +25,15 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run build
+      - name: Rebuild from source
+        run: npx vite build --outDir /tmp/dist-check
 
-      # Uploads only the files that changed since the last deploy.
-      # State is tracked in .ftp-deploy-sync-state.json on the server.
-      - name: Upload dist/ to cPanel
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          port: 21
-          local-dir: ./dist/
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+      # Vite fingerprints assets by content, so a byte-identical tree means the
+      # committed build really was produced from the committed source.
+      - name: Compare against committed dist/
+        run: |
+          if ! diff -r dist /tmp/dist-check; then
+            echo "::error::dist/ is stale. Run 'npm run build' and commit the result."
+            exit 1
+          fi
+          echo "dist/ matches source."
