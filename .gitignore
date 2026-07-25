@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Build output — produced by CI, never committed
+dist/
+
+# Env / secrets — never commit
+.env
+.env.*
+*.token
+
+# Logs & OS cruft
+*.log
+.DS_Store
+Thumbs.db
