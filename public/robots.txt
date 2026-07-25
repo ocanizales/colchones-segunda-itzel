@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://segundaitzel.mx/sitemap.xml

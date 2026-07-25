@@ -20,6 +20,15 @@ const HERO_IMGS = [
   },
 ];
 
+const MAPS_URL = "https://maps.google.com/?q=Local+16+Rio+Sena+Mexicali";
+
+// Parallel to content[lang].nav, same idiom as CARD_IMGS below.
+const NAV_HREFS = ["#inicio", "#catalogo", "#ubicacion"];
+
+// TODO: "Acerca de nosotros" and "Políticas de Garantía" still have no pages
+// to point at — they stay dead until those pages exist.
+const FOOTER_HREFS = ["#", "#", MAPS_URL];
+
 const CARD_IMGS = [
   "https://images.unsplash.com/photo-1601276174812-63280a55656e?w=700&h=480&fit=crop&auto=format",
   "https://images.unsplash.com/photo-1639690222869-1e608aa51f82?w=700&h=480&fit=crop&auto=format",
@@ -31,7 +40,7 @@ type Lang = "es" | "en";
 const content = {
   es: {
     nav: ["Inicio", "Catálogo", "Ubicación"],
-    heroHeadline: "Colchones y bases para toda la familia.",
+    heroHeadline: "Colchones y bases en Mexicali para toda la familia.",
     heroSub: "Visítanos en Mexicali: Colchones, bases y más para tu hogar.",
     heroBtn: "Ver Catálogo",
     gridTitle: "Lo más buscado para tu recámara.",
@@ -52,7 +61,7 @@ const content = {
   },
   en: {
     nav: ["Home", "Catalog", "Location"],
-    heroHeadline: "Mattresses and bases for the whole family.",
+    heroHeadline: "Mattresses and bases in Mexicali for the whole family.",
     heroSub: "Visit us in Mexicali: Mattresses, bases and more for your home.",
     heroBtn: "View Catalog",
     gridTitle: "Our most popular bedroom pieces.",
@@ -91,6 +100,11 @@ export default function App() {
     return () => clearInterval(id);
   }, []);
 
+  // Keep <html lang> honest when the visitor flips the toggle; index.html ships es-MX.
+  useEffect(() => {
+    document.documentElement.lang = lang === "es" ? "es-MX" : "en";
+  }, [lang]);
+
   const prev = () => setSlide((s) => (s - 1 + HERO_IMGS.length) % HERO_IMGS.length);
   const next = () => setSlide((s) => (s + 1) % HERO_IMGS.length);
 
@@ -111,8 +125,8 @@ export default function App() {
           </a>
 
           <nav className="hidden md:flex items-center gap-6" aria-label="Navegación principal">
-            {(t as typeof content["es"]).nav.map((item) => (
-              <a key={item} href="#" className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
+            {(t as typeof content["es"]).nav.map((item, i) => (
+              <a key={item} href={NAV_HREFS[i]} className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
                 {item}
               </a>
             ))}
@@ -131,7 +145,7 @@ export default function App() {
       </header>
 
       {/* ─── HERO ────────────────────────────────────────────── */}
-      <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-10 pb-12 grid md:grid-cols-[1fr_1fr] gap-8 items-center">
+      <section id="inicio" className="max-w-6xl mx-auto px-5 sm:px-8 pt-10 pb-12 grid md:grid-cols-[1fr_1fr] gap-8 items-center">
 
         <div className="flex flex-col gap-5">
           <span className="self-start bg-accent text-accent-foreground text-xs font-bold px-3 py-1 rounded-sm uppercase tracking-wider">
@@ -169,6 +183,12 @@ export default function App() {
               key={img.url}
               src={img.url}
               alt={img.alt}
+              width={1200}
+              height={800}
+              // The first slide is the LCP element; the rest can wait.
+              loading={i === 0 ? "eager" : "lazy"}
+              fetchPriority={i === 0 ? "high" : "low"}
+              decoding="async"
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${i === slide ? "opacity-100" : "opacity-0"}`}
             />
           ))}
@@ -200,7 +220,11 @@ export default function App() {
                 <div className="h-48 sm:h-52 overflow-hidden bg-muted flex-shrink-0">
                   <img
                     src={CARD_IMGS[i]}
-                    alt={card.title}
+                    alt={`${card.title} — ${card.sub}`}
+                    width={700}
+                    height={480}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
                   />
                 </div>
@@ -219,7 +243,7 @@ export default function App() {
       <div className="border-t-2 border-border" />
 
       {/* ─── CONTACT & LOCATION ──────────────────────────────── */}
-      <section className="py-10 md:py-14">
+      <section id="ubicacion" className="py-10 md:py-14">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <h2 className="font-display text-2xl sm:text-3xl font-bold text-primary mb-8">
             {(t as typeof content["es"]).contactTitle}
@@ -259,11 +283,16 @@ export default function App() {
                 <Phone className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" strokeWidth={2} />
                 <div>
                   <p className="font-bold text-foreground text-sm">Teléfono</p>
-                  <p className="text-sm text-muted-foreground mt-0.5">{(t as typeof content["es"]).phone}</p>
+                  <a
+                    href="tel:+526863529089"
+                    className="text-sm text-muted-foreground mt-0.5 hover:text-primary transition-colors underline-offset-4 hover:underline"
+                  >
+                    {(t as typeof content["es"]).phone}
+                  </a>
                 </div>
               </div>
               <a
-                href="https://maps.google.com/?q=Local+16+Rio+Sena+Mexicali"
+                href={MAPS_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="self-start text-xs font-bold text-primary underline underline-offset-4 hover:opacity-70 transition-opacity mt-1"
@@ -297,8 +326,8 @@ export default function App() {
       <footer className="border-t-2 border-border bg-secondary/40 py-7">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 flex flex-col items-center gap-4">
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
-            {(t as typeof content["es"]).footerLinks.map((link) => (
-              <a key={link} href="#" className="font-semibold text-muted-foreground hover:text-primary transition-colors">
+            {(t as typeof content["es"]).footerLinks.map((link, i) => (
+              <a key={link} href={FOOTER_HREFS[i]} className="font-semibold text-muted-foreground hover:text-primary transition-colors">
                 {link}
               </a>
             ))}
