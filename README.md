@@ -34,18 +34,20 @@ Domain: **segundaitzel.mx**. Done so far:
 - `tel:` click-to-call on the phone number, which was previously plain text
 - City in the `<h1>`, working nav anchors, lazy-loaded cards, eager LCP hero
 
-### Still needed — real data, do not invent
+Business data now in both the schema and the visible page (these must stay in
+sync — mismatched NAP is a scored local-SEO defect):
 
-The schema deliberately omits these rather than guessing. Wrong structured data
-is worse than none:
+- **Hours** Mon–Sun 09:00–16:00, closed Wednesday
+- **Address** Local 16, Río Sena, Col. Virreyes, C.P. 21190, Mexicali, B.C.
+- **Geo** 32.6179382, -115.5212309
+
+### Still needed — real data, do not invent
 
 | Field | Why it matters |
 | --- | --- |
-| `openingHoursSpecification` | Businesses open at search time rank higher in the local pack |
-| `geo` (5+ decimals) | Precision affects proximity, the single largest local ranking input |
-| Postal code + colonia | Completes NAP; must match Google Business Profile exactly |
 | `priceRange` | Shown in rich results |
 | A real storefront photo | `og:image` currently points at Unsplash stock |
+| GBP place link | The coordinates came from the Río Sena street geocode, not the storefront itself. Once the Google Business Profile is claimed, swap `LAT_LNG` in `App.tsx` for the real place link — better directions and an exact pin. |
 
 ### Known limits
 

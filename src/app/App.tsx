@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin, ChevronRight, ChevronLeft, Phone } from "lucide-react";
+import { MapPin, ChevronRight, ChevronLeft, Phone, Clock } from "lucide-react";
 
 const HERO_IMGS = [
   {
@@ -20,7 +20,12 @@ const HERO_IMGS = [
   },
 ];
 
-const MAPS_URL = "https://maps.google.com/?q=Local+16+Rio+Sena+Mexicali";
+// Coordinates rather than a text query, so the pin is deterministic.
+// TODO: swap for the Google Business Profile share link once the listing is
+// claimed — a real place ID beats raw coordinates for directions.
+const LAT_LNG = "32.6179382,-115.5212309";
+const MAPS_URL = `https://maps.google.com/?q=${LAT_LNG}`;
+const MAPS_EMBED = `https://maps.google.com/maps?q=${LAT_LNG}&output=embed&z=17`;
 
 // Parallel to content[lang].nav, same idiom as CARD_IMGS below.
 const NAV_HREFS = ["#inicio", "#catalogo", "#ubicacion"];
@@ -50,8 +55,11 @@ const content = {
       { title: "Base de Cama", sub: "Resistente y Duradera" },
     ],
     contactTitle: "Visítanos y Contáctanos.",
-    locationCaption: "Encuéntranos fácilmente — Local 16, Río Sena, Mexicali.",
-    locationText: "Local 16, Río Sena, Mexicali.",
+    locationCaption: "Encuéntranos fácilmente — Local 16, Río Sena, Col. Virreyes.",
+    locationText: "Local 16, Río Sena, Col. Virreyes, C.P. 21190, Mexicali, B.C.",
+    hoursLabel: "Horario",
+    hoursText: "Lunes a domingo, 9:00 a 16:00 h",
+    hoursClosed: "Miércoles cerrado",
     mapsLink: "Abrir en Google Maps",
     ctaLabel: "Atención directa, sin rodeos.",
     whatsappBtn: "Escríbenos por WhatsApp",
@@ -71,8 +79,11 @@ const content = {
       { title: "Bed Base", sub: "Sturdy & Durable" },
     ],
     contactTitle: "Come Visit Us.",
-    locationCaption: "Find us easily — Local 16, Río Sena, Mexicali.",
-    locationText: "Local 16, Río Sena, Mexicali.",
+    locationCaption: "Find us easily — Local 16, Río Sena, Col. Virreyes.",
+    locationText: "Local 16, Río Sena, Col. Virreyes, C.P. 21190, Mexicali, B.C.",
+    hoursLabel: "Hours",
+    hoursText: "Monday to Sunday, 9:00 AM – 4:00 PM",
+    hoursClosed: "Closed Wednesdays",
     mapsLink: "Open in Google Maps",
     ctaLabel: "Direct help, no runaround.",
     whatsappBtn: "Message us on WhatsApp",
@@ -255,7 +266,7 @@ export default function App() {
               <div className="aspect-[4/3] border-2 border-border rounded-sm overflow-hidden bg-muted">
                 <iframe
                   title="Ubicación Local 16 Río Sena Mexicali"
-                  src="https://maps.google.com/maps?q=Rio+Sena,+Mexicali,+Baja+California,+Mexico&output=embed&z=16"
+                  src={MAPS_EMBED}
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
@@ -289,6 +300,20 @@ export default function App() {
                   >
                     {(t as typeof content["es"]).phone}
                   </a>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Clock className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" strokeWidth={2} />
+                <div>
+                  <p className="font-bold text-foreground text-sm">
+                    {(t as typeof content["es"]).hoursLabel}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-0.5 leading-relaxed">
+                    {(t as typeof content["es"]).hoursText}
+                  </p>
+                  <p className="text-sm text-accent font-semibold mt-0.5">
+                    {(t as typeof content["es"]).hoursClosed}
+                  </p>
                 </div>
               </div>
               <a

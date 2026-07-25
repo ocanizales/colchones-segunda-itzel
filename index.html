@@ -34,11 +34,24 @@
     <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
 
     <!--
+      Fonts are loaded here, not via @import in fonts.css. Tailwind v4 emits its
+      own @import first, which made the remote @import invalid per the CSS spec
+      (remote imports must precede all other rules), so the bundler silently
+      dropped it and Fraunces/Nunito never loaded in production — the page fell
+      back to Georgia. Linking from the head also lets the preload scanner start
+      the fetch immediately instead of waiting on the CSS round-trip.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;0,800;1,700&family=Nunito:wght@400;500;600;700&display=swap"
+    />
+
+    <!--
       FurnitureStore is the correct Schema.org subtype for a mattress retailer;
       a generic LocalBusiness scores worse for rich results.
-      Still missing real data, so deliberately omitted rather than guessed:
-      geo (needs 5+ decimals), openingHoursSpecification, priceRange,
-      postalCode, aggregateRating. See README.
+      Still omitted rather than guessed: priceRange, aggregateRating. See README.
     -->
     <script type="application/ld+json">
       {
@@ -52,13 +65,33 @@
         "image": "https://images.unsplash.com/photo-1692455067486-d4637182a61c?w=1200&h=630&fit=crop&auto=format",
         "address": {
           "@type": "PostalAddress",
-          "streetAddress": "Local 16, Río Sena",
+          "streetAddress": "Local 16, Río Sena, Col. Virreyes",
           "addressLocality": "Mexicali",
           "addressRegion": "BC",
+          "postalCode": "21190",
           "addressCountry": "MX"
         },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 32.6179382,
+          "longitude": -115.5212309
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Thursday", "Friday", "Saturday", "Sunday"],
+            "opens": "09:00",
+            "closes": "16:00"
+          },
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": "Wednesday",
+            "opens": "00:00",
+            "closes": "00:00"
+          }
+        ],
         "areaServed": { "@type": "City", "name": "Mexicali" },
-        "hasMap": "https://maps.google.com/?q=Local+16+Rio+Sena+Mexicali",
+        "hasMap": "https://maps.google.com/?q=32.6179382,-115.5212309",
         "currenciesAccepted": "MXN",
         "knowsLanguage": ["es-MX", "en"]
       }
