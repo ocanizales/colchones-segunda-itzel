@@ -92,13 +92,21 @@ Required repository secrets (**Settings → Secrets and variables → Actions**)
 `server-dir` is set in the workflow, not a secret, because a directory name is
 not sensitive. It is **relative to where the FTP account lands on login**, not
 an absolute filesystem path — the most common cause of a deploy that reports
-success while the site never changes. A main cPanel login lands in
-`/home3/larva`, so the target is `segundaitzel.mx/`. A domain-scoped FTP
-account lands directly in the document root, so it would be `./`.
+success while the site never changes.
 
-Prefer a dedicated FTP account (**cPanel → FTP Accounts**) over the main login:
-it can be scoped to this one directory and revoked without changing the cPanel
-password.
+The deploy account is created in **cPanel → FTP Accounts** scoped to
+`/home3/larva/segundaitzel.mx`, so it starts in the document root and
+`server-dir` is `./`. Watch cPanel's *Directory* field when creating it — it
+auto-fills to `segundaitzel.mx/<username>` and must be corrected to the
+document root. Switching to the main cPanel login instead (lands in
+`/home3/larva`) would require `server-dir: segundaitzel.mx/`.
+
+Note that the workflow uploads the **contents** of `dist/`, not the folder —
+`dist/index.html` lands as `<docroot>/index.html`. There is no `dist` directory
+on the server.
+
+A dedicated account is preferred over the main cPanel login: it is scoped to
+one directory and can be revoked without changing the cPanel password.
 
 ### One-time cPanel setup
 
