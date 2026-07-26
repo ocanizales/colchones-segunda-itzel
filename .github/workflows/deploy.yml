@@ -36,6 +36,12 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           port: 21
+          # FTP_SERVER must be the server's own hostname
+          # (gator3011.hostgator.com), NOT the account's IP. HostGator serves a
+          # *.hostgator.com certificate, so connecting by IP fails strict TLS
+          # verification on a name mismatch. The hostname resolves to a
+          # different IP than the site does — same machine, main IP vs shared
+          # IP — and reaches the same account.
           local-dir: ./dist/
           # server-dir is relative to wherever the FTP account lands on login,
           # NOT an absolute filesystem path. The deploy account is scoped to
