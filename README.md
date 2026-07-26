@@ -5,8 +5,8 @@ Vite + React 18 + Tailwind 4. Originally exported from Figma Make.
 
 Pipeline: **Figma → Claude (SEO) → GitHub → cPanel**
 
-cPanel pulls this repo directly through Git Version Control and deploys the
-committed `dist/`.
+Deploys automatically to HostGator over FTPS on every push to `main`.
+A manual cPanel Git Version Control path is kept as a fallback.
 
 ## Local development
 
@@ -17,12 +17,12 @@ npm run build    # writes dist/ — ALWAYS run before committing
 npm run preview  # serve dist/ locally, exactly as cPanel will
 ```
 
-**`dist/` is committed on purpose.** cPanel's Git Version Control copies files
-but cannot run a build, so the compiled output has to be in the repo or there is
-nothing for it to deploy. The cost is that source and build can drift: edit
-`src/` without rebuilding and cPanel will redeploy the *old* version while the
-commit looks correct. CI guards this — it rebuilds from source and fails if the
-result differs from the committed `dist/`.
+**`dist/` is committed**, which is unusual and worth understanding. The FTPS
+workflow builds its own copy and does not read the committed one, so for the
+primary deploy path it is dead weight. It exists only so the cPanel Git
+fallback has something to copy when the server cannot build. Nothing enforces
+that it stays current any more, so treat it as possibly stale: run
+`npm run build` and commit before relying on the fallback.
 
 ## SEO
 
@@ -70,57 +70,74 @@ sync — mismatched NAP is a scored local-SEO defect):
 
 ## Deployment
 
-### One-time cPanel setup
+Host: HostGator, cPanel user `larva`, document root
+`/home3/larva/segundaitzel.mx/`.
 
-1. **Domains** → add `segundaitzel.mx`. Note the document root, usually
-   `public_html`.
-2. **SSL/TLS Status** → run *AutoSSL* **before the first deploy**. `.htaccess`
+Two paths exist. **The FTPS workflow is the primary one** — it is the only one
+that is actually automatic. The cPanel Git path is a manual fallback for when
+FTP is unavailable.
+
+### Primary — GitHub Actions over FTPS
+
+`.github/workflows/deploy.yml` runs on every push to `main`: `npm ci`,
+`npm run build`, then uploads `dist/` over FTPS. Only changed files are sent;
+sync state lives in `.ftp-deploy-sync-state.json` on the server. Delete that
+file to force a full re-upload.
+
+Required repository secrets (**Settings → Secrets and variables → Actions**):
+
+| Secret | Value |
+| --- | --- |
+| `FTP_SERVER` | FTP hostname, e.g. `ftp.segundaitzel.mx` — hostname only, no `ftp://` |
+| `FTP_USERNAME` | Full FTP username, e.g. `larva` or `deploy@segundaitzel.mx` |
+| `FTP_PASSWORD` | That account's password |
+
+`server-dir` is set in the workflow, not a secret, because a directory name is
+not sensitive. It is **relative to where the FTP account lands on login**, not
+an absolute filesystem path — the most common cause of a deploy that reports
+success while the site never changes. A main cPanel login lands in
+`/home3/larva`, so the target is `segundaitzel.mx/`. A domain-scoped FTP
+account lands directly in the document root, so it would be `./`.
+
+Prefer a dedicated FTP account (**cPanel → FTP Accounts**) over the main login:
+it can be scoped to this one directory and revoked without changing the cPanel
+password.
+
+### Fallback — cPanel Git Version Control
+
+1. **SSL/TLS Status** → run *AutoSSL* **before the first deploy**. `.htaccess`
    forces HTTPS, so deploying first would redirect to a certificate that does
    not exist yet.
-3. **Git Version Control** → *Create*:
+2. **Git Version Control** → *Create*:
    - Clone URL: `https://github.com/ocanizales/colchones-segunda-itzel.git`
-   - Repository Path: `/home/<user>/repositories/colchones-segunda-itzel`
+   - Repository Path: `/home3/larva/repositories/colchones-segunda-itzel`
    - Branch: `main`
 
    The repo is public, so no deploy key is needed. If it is ever made private,
    cPanel needs an SSH deploy key added to GitHub first.
 
-`.cpanel.yml` at the repo root is what makes the Deploy button work — it copies
-`dist/.` into `$HOME/public_html/`. cPanel refuses to deploy without it.
+Then per update, in **Manage → Pull or Deploy**: **Update from Remote**, then
+**Deploy HEAD Commit**, in that order. Deploying without pulling redeploys the
+old commit. cPanel has **no webhook and does not auto-pull**, so this path is
+always two manual clicks.
 
-### Every update
-
-In **Git Version Control → Manage → Pull or Deploy**:
-
-1. **Update from Remote** — pulls new commits from GitHub into cPanel's clone
-2. **Deploy HEAD Commit** — runs `.cpanel.yml`, copying `dist/` to `public_html`
-
-Both, in that order. Deploying without pulling redeploys the old commit.
-
-### Making it automatic
-
-cPanel does **not** auto-pull on push — there is no webhook. Until a cron job
-exists, every update needs those two button clicks. To automate, add a cPanel
-cron job (**Cron Jobs**, every 15 min or so):
-
-```sh
-cd $HOME/repositories/colchones-segunda-itzel && git pull && \
-  uapi VersionControlDeployment create repository_root=$HOME/repositories/colchones-segunda-itzel
-```
-
-Run it once by hand over SSH first — the `git` and `uapi` paths vary by host,
-and some shared plans disable `uapi` from cron.
+`.cpanel.yml` attempts `npm ci && npm run build` on the server, then copies
+`dist/.` to the document root. The build is best-effort: shared hosting often
+has no `npm` on the deploy PATH and enforces a memory limit that kills Vite. On
+failure it logs `SERVER BUILD SKIPPED` and copies the committed `dist/`
+instead, so a deploy never leaves the site half-written. Check the deploy log
+for that string to know which one you got.
 
 ## Troubleshooting
 
 | Symptom | Cause |
 | --- | --- |
-| Deploy button greyed out | `.cpanel.yml` missing, or the branch has no new commit to deploy |
-| Deployed but the site is unchanged | Pulled without deploying, or deployed without pulling |
-| Site shows an old version despite deploying | `dist/` was committed stale — check the CI run |
-| Blank white page | Assets 404ing — `.cpanel.yml` copied to the wrong document root |
+| `Input required and not supplied: server` | The three FTP secrets have not been added yet |
+| Action succeeds but the site never changes | `server-dir` is wrong — files landed in the wrong directory |
+| `530 Login authentication failed` | Wrong username form; try the full `user@domain` |
+| FTPS handshake fails | Host does not support FTPS on 21; try `protocol: ftp` or port 990 |
+| Deploy button greyed out (cPanel path) | `.cpanel.yml` missing, or no new commit to deploy |
+| Site shows an old version after a cPanel deploy | Pulled without deploying, or the server build was skipped and the committed `dist/` is stale |
+| Blank white page | Assets 404ing — deployed to the wrong document root |
 | Redirect loop | AutoSSL has not issued a certificate yet |
-| `Repository is not empty` on clone | Point Git Version Control at a fresh path, not `public_html` |
-
-The deleted FTPS workflow is in git history (`Add cPanel deployment pipeline`)
-if a fully automatic push-to-deploy is ever wanted instead.
+| `Repository is not empty` on clone | Point Git Version Control at a fresh path, not the document root |
