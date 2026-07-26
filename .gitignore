@@ -1,10 +1,10 @@
 # Dependencies
 node_modules/
 
-# NOTE: dist/ is deliberately COMMITTED. cPanel's Git Version Control only
-# copies files — it cannot run a build — so the compiled output has to be in
-# the repo for it to have anything to deploy. Always `npm run build` before
-# committing; CI fails the push if dist/ is stale.
+# Build output. GitHub Actions builds this fresh on every push and uploads it
+# over FTPS, so it must NOT be committed — a stale committed copy would only
+# create confusion about which build is live.
+dist/
 
 # Env / secrets — never commit
 .env
