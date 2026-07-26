@@ -38,8 +38,9 @@ jobs:
           port: 21
           local-dir: ./dist/
           # server-dir is relative to wherever the FTP account lands on login,
-          # NOT an absolute filesystem path. A main cPanel login (user "larva")
-          # lands in /home3/larva, so the target is segundaitzel.mx/. If you
-          # instead create a domain-scoped FTP account that lands directly in
-          # /home3/larva/segundaitzel.mx, change this to ./
-          server-dir: segundaitzel.mx/
+          # NOT an absolute filesystem path. The deploy account is scoped to
+          # /home3/larva/segundaitzel.mx, so it starts in the document root and
+          # the target is ./ — this uploads the CONTENTS of dist/, not the
+          # folder itself. If you ever switch to the main cPanel login (which
+          # lands in /home3/larva), this must become segundaitzel.mx/ instead.
+          server-dir: ./
