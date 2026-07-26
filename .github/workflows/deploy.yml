@@ -1,19 +1,17 @@
-name: Verify dist is current
-
-# Deployment itself happens in cPanel (Git Version Control → Deploy HEAD Commit),
-# which copies files but cannot build. That makes a committed dist/ load-bearing:
-# if someone edits src/ and forgets to rebuild, cPanel would happily deploy the
-# previous version and the change would silently never go live. This job rebuilds
-# from source and fails if the result differs from what was committed.
+name: Build & Deploy to cPanel
 
 on:
   push:
     branches: [main]
-  pull_request:
   workflow_dispatch:
 
+# Never let two deploys write to the document root at the same time.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
 jobs:
-  verify:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,15 +23,23 @@ jobs:
 
       - run: npm ci
 
-      - name: Rebuild from source
-        run: npx vite build --outDir /tmp/dist-check
+      - run: npm run build
 
-      # Vite fingerprints assets by content, so a byte-identical tree means the
-      # committed build really was produced from the committed source.
-      - name: Compare against committed dist/
-        run: |
-          if ! diff -r dist /tmp/dist-check; then
-            echo "::error::dist/ is stale. Run 'npm run build' and commit the result."
-            exit 1
-          fi
-          echo "dist/ matches source."
+      # Uploads only the files that changed since the last deploy; state lives
+      # in .ftp-deploy-sync-state.json on the server. Delete that file to force
+      # a full re-upload.
+      - name: Upload dist/ to cPanel
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./dist/
+          # server-dir is relative to wherever the FTP account lands on login,
+          # NOT an absolute filesystem path. A main cPanel login (user "larva")
+          # lands in /home3/larva, so the target is segundaitzel.mx/. If you
+          # instead create a domain-scoped FTP account that lands directly in
+          # /home3/larva/segundaitzel.mx, change this to ./
+          server-dir: segundaitzel.mx/
