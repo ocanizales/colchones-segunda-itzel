@@ -130,7 +130,16 @@ export default function App() {
             <span className="font-display text-xl sm:text-2xl font-bold text-primary leading-none">
               Colchones
             </span>
-            <span className="font-display text-lg sm:text-xl font-semibold text-accent leading-none">
+            {/*
+              #925720 instead of the --accent token (#D4843A): the token reads
+              2.7:1 on --background and 2.5:1 on secondary/50, well under the
+              4.5:1 AA minimum. This is the nearest darker shade of the same
+              hue that clears it (5.4:1 here, 4.9:1 on the palest surface it
+              lands on). Same substitution on the hero badge and the "cerrado"
+              line below. It cannot live in theme.css — that file is not ours
+              to edit on this pass.
+            */}
+            <span className="font-display text-lg sm:text-xl font-semibold text-[#925720] leading-none">
               Segunda Itzel
             </span>
           </a>
@@ -159,7 +168,7 @@ export default function App() {
       <section id="inicio" className="max-w-6xl mx-auto px-5 sm:px-8 pt-10 pb-12 grid md:grid-cols-[1fr_1fr] gap-8 items-center">
 
         <div className="flex flex-col gap-5">
-          <span className="self-start bg-accent text-accent-foreground text-xs font-bold px-3 py-1 rounded-sm uppercase tracking-wider">
+          <span className="self-start bg-[#925720] text-accent-foreground text-xs font-bold px-3 py-1 rounded-sm uppercase tracking-wider">
             📍 Mexicali, B.C.
           </span>
           <h1 className="font-display text-4xl sm:text-5xl font-bold text-primary leading-tight">
@@ -176,11 +185,19 @@ export default function App() {
               {(t as typeof content["es"]).heroBtn}
               <ChevronRight className="w-4 h-4" />
             </a>
+            {/*
+              White on WhatsApp brand green (#25D366) is only 2.0:1 — the worst
+              contrast failure on the page. Deepened to #188640, the lightest
+              green of that hue that reaches 4.5:1 against white (4.6:1), with
+              the hover shade darkened proportionally. Still unmistakably the
+              WhatsApp button; the alternative was dark text on brand green,
+              which changes the button's look far more.
+            */}
             <a
               href="https://wa.me/526863529089"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-[#25D366] text-white px-6 py-3 text-sm font-bold rounded-sm hover:bg-[#1db954] transition-colors"
+              className="inline-flex items-center gap-2 bg-[#188640] text-white px-6 py-3 text-sm font-bold rounded-sm hover:bg-[#157538] transition-colors"
             >
               <WhatsAppIcon className="w-4 h-4" />
               WhatsApp
@@ -211,7 +228,9 @@ export default function App() {
           </button>
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
             {HERO_IMGS.map((_, i) => (
-              <button key={i} onClick={() => setSlide(i)} className={`h-1.5 rounded-full transition-all duration-300 ${i === slide ? "w-5 bg-primary" : "w-1.5 bg-white/60"}`} />
+              // Dots have no text, so they had no accessible name at all.
+              // Labelled in Spanish to match "Anterior"/"Siguiente" above.
+              <button key={i} onClick={() => setSlide(i)} aria-label={`Ver imagen ${i + 1}`} aria-current={i === slide} className={`h-1.5 rounded-full transition-all duration-300 ${i === slide ? "w-5 bg-primary" : "w-1.5 bg-white/60"}`} />
             ))}
           </div>
         </div>
@@ -311,7 +330,7 @@ export default function App() {
                   <p className="text-sm text-muted-foreground mt-0.5 leading-relaxed">
                     {(t as typeof content["es"]).hoursText}
                   </p>
-                  <p className="text-sm text-accent font-semibold mt-0.5">
+                  <p className="text-sm text-[#925720] font-semibold mt-0.5">
                     {(t as typeof content["es"]).hoursClosed}
                   </p>
                 </div>
@@ -334,12 +353,13 @@ export default function App() {
                 href="https://wa.me/526863529089"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 bg-[#25D366] text-white px-5 py-4 font-bold text-sm rounded-sm hover:bg-[#1db954] transition-colors shadow-sm w-full"
+                className="flex items-center gap-3 bg-[#188640] text-white px-5 py-4 font-bold text-sm rounded-sm hover:bg-[#157538] transition-colors shadow-sm w-full"
               >
                 <WhatsAppIcon className="w-6 h-6 flex-shrink-0" />
                 <div className="flex flex-col leading-tight text-left">
                   <span>{(t as typeof content["es"]).whatsappBtn}</span>
-                  <span className="font-normal text-white/80 text-xs">{(t as typeof content["es"]).phone}</span>
+                  {/* Full white, not white/80: at 80% the phone number drops to 3.6:1 on the button. */}
+                  <span className="font-normal text-white text-xs">{(t as typeof content["es"]).phone}</span>
                 </div>
               </a>
             </div>
