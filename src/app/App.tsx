@@ -64,6 +64,7 @@ const content = {
     ctaLabel: "Atención directa, sin rodeos.",
     whatsappBtn: "Escríbenos por WhatsApp",
     phone: "+52 686 352 9089",
+    footerTitle: "Enlaces útiles",
     footerLinks: ["Acerca de nosotros", "Políticas de Garantía", "Google Maps"],
     footerCopy: "© 2026 Colchones Segunda Itzel. Todos los derechos reservados.",
   },
@@ -88,6 +89,7 @@ const content = {
     ctaLabel: "Direct help, no runaround.",
     whatsappBtn: "Message us on WhatsApp",
     phone: "+52 686 352 9089",
+    footerTitle: "Useful links",
     footerLinks: ["About Us", "Warranty Policies", "Google Maps"],
     footerCopy: "© 2026 Colchones Segunda Itzel. All rights reserved.",
   },
@@ -346,9 +348,9 @@ export default function App() {
             </div>
 
             <div className="flex flex-col gap-4">
-              <p className="font-bold text-foreground text-sm leading-snug">
+              <h3 className="font-bold text-foreground text-sm leading-snug">
                 {(t as typeof content["es"]).ctaLabel}
-              </p>
+              </h3>
               <a
                 href="https://wa.me/526863529089"
                 target="_blank"
@@ -370,6 +372,9 @@ export default function App() {
       {/* ─── FOOTER ──────────────────────────────────────────── */}
       <footer className="border-t-2 border-border bg-secondary/40 py-7">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 flex flex-col items-center gap-4">
+          <h2 className="font-display text-base font-bold text-primary">
+            {(t as typeof content["es"]).footerTitle}
+          </h2>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
             {(t as typeof content["es"]).footerLinks.map((link, i) => (
               <a key={link} href={FOOTER_HREFS[i]} className="font-semibold text-muted-foreground hover:text-primary transition-colors">
