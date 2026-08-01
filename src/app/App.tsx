@@ -55,6 +55,11 @@ const content = {
       { title: "Base de Cama", sub: "Resistente y Duradera" },
     ],
     contactTitle: "Visítanos y Contáctanos.",
+    storefrontTitle: "Nuestra tienda en Local 16, Río Sena",
+    storefrontCaption:
+      "Busca el letrero azul de Segunda Itzel sobre la pared naranja y los portones rosas: ahí estamos, en el Local 16 de Río Sena.",
+    storefrontAlt:
+      "Fachada de Colchones Segunda Itzel en Mexicali: letrero pintado SEGUNDA Itzel en azul sobre pared naranja, portones abiertos con colchones, bases y cobijas a la vista, junto al muro rotulado LOCAL 16 Río Sena.",
     locationCaption: "Encuéntranos fácilmente — Local 16, Río Sena, Col. Virreyes.",
     locationText: "Local 16, Río Sena, Col. Virreyes, C.P. 21190, Mexicali, B.C.",
     hoursLabel: "Horario",
@@ -79,6 +84,11 @@ const content = {
       { title: "Bed Base", sub: "Sturdy & Durable" },
     ],
     contactTitle: "Come Visit Us.",
+    storefrontTitle: "Our store at Local 16, Río Sena",
+    storefrontCaption:
+      "Look for the blue Segunda Itzel sign on the orange wall and the pink gates — that's us, at Local 16 on Río Sena.",
+    storefrontAlt:
+      "Storefront of Colchones Segunda Itzel in Mexicali: a painted SEGUNDA Itzel sign in blue on an orange wall, open gates showing mattresses, bases and blankets, beside a wall lettered LOCAL 16 Río Sena.",
     locationCaption: "Find us easily — Local 16, Río Sena, Col. Virreyes.",
     locationText: "Local 16, Río Sena, Col. Virreyes, C.P. 21190, Mexicali, B.C.",
     hoursLabel: "Hours",
@@ -278,6 +288,26 @@ export default function App() {
           <h2 className="font-display text-2xl sm:text-3xl font-bold text-primary mb-8">
             {(t as typeof content["es"]).contactTitle}
           </h2>
+
+          <figure className="mb-8">
+            <h3 className="font-display text-lg font-bold text-primary mb-3">
+              {(t as typeof content["es"]).storefrontTitle}
+            </h3>
+            <img
+              src="fachada-colchones-segunda-itzel-1100.webp"
+              srcSet="fachada-colchones-segunda-itzel-700.webp 700w, fachada-colchones-segunda-itzel-1100.webp 1100w, fachada-colchones-segunda-itzel-1600.webp 1600w"
+              sizes="(min-width: 1152px) 1088px, calc(100vw - 2.5rem)"
+              width={1600}
+              height={722}
+              loading="lazy"
+              decoding="async"
+              alt={(t as typeof content["es"]).storefrontAlt}
+              className="w-full h-auto border-2 border-border rounded-sm"
+            />
+            <figcaption className="text-xs text-muted-foreground italic mt-2">
+              {(t as typeof content["es"]).storefrontCaption}
+            </figcaption>
+          </figure>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
 
